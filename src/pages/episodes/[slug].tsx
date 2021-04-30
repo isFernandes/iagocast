@@ -1,15 +1,18 @@
-import React from 'react';
+import React from "react";
 
-import { useRouter } from 'next/router'
-import Image from 'next/image'
-import { GetStaticPaths, GetStaticProps } from 'next';
+import Image from "next/image";
+import Head from "next/head";
+import { GetStaticPaths, GetStaticProps } from "next";
 import Link from "next/link";
 
-import { api } from '../../services/api';
-import { convertDurationToTimeString, formatDatePublishToString } from '../../utils/formatingDataForUse';
+import { api } from "../../services/api";
+import {
+  convertDurationToTimeString,
+  formatDatePublishToString,
+} from "../../utils/formatingDataForUse";
 
-
-import styles from './episode.module.scss';
+import styles from "./episode.module.scss";
+import { usePlayer } from "../../contexts/PlayerContext";
 
 type Episode = {
   id: string;
@@ -24,16 +27,20 @@ type Episode = {
 };
 
 type EpisodeProps = {
-  episode: Episode,
-}
+  episode: Episode;
+};
 
 export default function Episode({ episode }: EpisodeProps) {
+  const { play } = usePlayer();
   return (
     <div className={styles.episode}>
+      <Head>
+        <title>{episode.title} | IagoCast</title>
+      </Head>
       <div className={styles.thumbnailContainer}>
         <Link href="/">
           <button>
-            <img src='/arrow-left.svg' />
+            <img src="/arrow-left.svg" />
           </button>
         </Link>
         <Image
@@ -42,8 +49,12 @@ export default function Episode({ episode }: EpisodeProps) {
           height={160}
           objectFit="cover"
         />
-        <button>
-          <img src='/play.svg' />
+        <button
+          onClick={() => {
+            play(episode);
+          }}
+        >
+          <img src="/play.svg" />
         </button>
       </div>
 
@@ -54,18 +65,17 @@ export default function Episode({ episode }: EpisodeProps) {
         <span>{episode.durationAsString}</span>
       </header>
 
-      <div className={styles.description} dangerouslySetInnerHTML={
-        {
+      <div
+        className={styles.description}
+        dangerouslySetInnerHTML={{
           __html: episode.description,
-        }
-      } />
-
+        }}
+      />
     </div>
-  )
+  );
 }
 
-
-//Obrigatorio para paginas estaticas de dados dinamicos 
+//Obrigatorio para paginas estaticas de dados dinamicos
 export const getStaticPaths: GetStaticPaths = async () => {
   const { data } = await api.get("/episodes", {
     params: {
@@ -74,31 +84,30 @@ export const getStaticPaths: GetStaticPaths = async () => {
       _order: "desc",
     },
   });
-  const paths = data.map(ep => {
+  const paths = data.map((ep) => {
     return {
-      params: { 
+      params: {
         slug: ep.id,
-      }
-    }
-  })
+      },
+    };
+  });
 
   //os paths permitem que determinados conteudos da pagina tambem sejam carregados de maneira estatica
   /**
    * Fallback
-   * recebe alguns parametro 
-   * - blocking: so     redireciona depois de carregar. 
-   * - true: redireciona mas a pagina apresenta carregamento. 
+   * recebe alguns parametro
+   * - blocking: so     redireciona depois de carregar.
+   * - true: redireciona mas a pagina apresenta carregamento.
    * -false: retorna erro 404 direto
-   *  
+   *
    */
   return {
     paths,
-    fallback: 'blocking'
-  }
-}
+    fallback: "blocking",
+  };
+};
 
 export const getStaticProps: GetStaticProps = async (ctx) => {
-
   const { slug } = ctx.params;
   const { data } = await api.get(`/episodes/${slug}`);
 
@@ -116,8 +125,8 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
 
   return {
     props: {
-      episode
+      episode,
     },
-    revalidate: 60 * 60 * 24, //24 horas 
-  }
-}
+    revalidate: 60 * 60 * 24, //24 horas
+  };
+};
