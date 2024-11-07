@@ -1,6 +1,6 @@
 # IagoCast
 
-Projeto desenvolvido junto a uma semana da Next Level Week (NLW) da Rocketseat em 2021. 
+Projeto desenvolvido durante a semana Next Level Week (NLW) da Rocketseat em 2021. 
 
 ## TECHS:
 - NextJS (versão 10 na epoca, atualizada para a 15)
